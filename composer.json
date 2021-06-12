@@ -1,0 +1,27 @@
+{
+  "name": "comely-io/buffer-php",
+  "description": "Arbitrary bytes buffer in PHP",
+  "type": "library",
+  "homepage": "https://github.com/comely-io/buffer-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Furqan A. Siddiqui",
+      "email": "hello@furqansiddiqui.com",
+      "homepage": "https://www.furqansiddiqui.com",
+      "role": "Author"
+    }
+  ],
+  "require": {
+    "php": "^8.0",
+    "ext-gmp": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Comely\\Buffer\\": [
+        "src"
+      ]
+    }
+  },
+  "minimum-stability": "dev"
+}
