@@ -415,7 +415,7 @@ class AbstractByteArray
     /**
      * @return array
      */
-    protected function dump(): array
+    public function dump(): array
     {
         return [
             "bytes" => $this->byteArray(),
