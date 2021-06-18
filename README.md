@@ -23,11 +23,34 @@ fromByteArray | Initialize buffer from byte array
 fromBinary | Initialize buffer from array of binary encoded bytes
 __construct | Creates a new buffer instance from given argument
 
+## Fixed-length Buffers
+
 ### Methods
 
 Method | Description
 --- | ---
 len | Get length/size of buffer in bytes
+raw | Get existing bytes in buffer as string
+byteArray | Returns an indexed Array comprised of every byte's position on ASCII table
+copy | Creates a copy of buffer from given start and/or up to length
+equals | Compares buffer bytes with another buffer or string
+apply | Applies a function/callback to existing buffer creating a new buffer instance as result
+read | Creates a [ByteReader](#bytereader) instance
+hash | Creates a [ByteDigest](#bytedigest) instance
+switchEndianess | Converts endianess of entire buffer between big and little endians
+dump | Buffer information as an Array
+toBase16 | Encodes the buffer as Base16/Hexadecimal
+toBase64 | Encodes the buffer in Base64
+toBinary | Encodes the buffer into an indexed Array where each index is binary representation of byte (1s and 0s)
+
+## Writeable Buffers
+
+All the methods from fixed-length buffers above, and also:
+
+### Methods
+
+Method | Description
+--- | ---
 clean | Flush any existing data in buffer
 readOnly | Puts buffer in Read-only state; Nothing further can be appended to it
 writable | Puts buffer in writable state
@@ -41,18 +64,6 @@ appendUInt32LE | Appends 4 byte integer in little endian byte order
 appendUInt32BE | Appends 4 byte integer in big endian byte order
 appendUInt64LE | Appends 8 byte integer in little endian byte order
 appendUInt64BE | Appends 8 byte integer in big endian byte order
-raw | Get existing bytes in buffer as string
-byteArray | Returns an indexed Array comprised of every byte's position on ASCII table
-copy | Creates a copy of buffer from given start and/or up to length
-equals | Compares buffer bytes with another buffer or string
-apply | Applies a function/callback to existing buffer creating a new buffer instance as result
-read | Creates a [ByteReader](#bytereader) instance
-hash | Creates a [ByteDigest](#bytedigest) instance
-switchEndianess | Converts endianess of entire buffer between big and little endians
-dump | Buffer information as an Array
-toBase16 | Encodes the buffer as Base16/Hexadecimal
-toBase64 | Encodes the buffer in Base64
-toBinary | Encodes the buffer into an indexed Array where each index is binary representation of byte (1s and 0s)
 
 ## ByteReader
 

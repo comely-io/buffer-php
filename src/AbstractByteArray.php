@@ -53,21 +53,133 @@ class AbstractByteArray
     }
 
     /**
+     * @param string $hex
+     * @return static
+     */
+    public static function fromBase16(string $hex): static
+    {
+        if ($hex) {
+            // Validate string as Hexadecimal
+            if (!preg_match('/^(0x)?[a-f0-9]+$/i', $hex)) {
+                throw new \InvalidArgumentException('Cannot instantiate Buffer; expected Base16/Hexadecimal string');
+            }
+
+            // Remove the "0x" prefix
+            if (substr($hex, 0, 2) === "0x") {
+                $hex = substr($hex, 2);
+            }
+
+            // Evens-out odd number of hexits
+            if (strlen($hex) % 2 !== 0) {
+                $hex = "0" . $hex;
+            }
+        }
+
+        return new static(hex2bin($hex));
+    }
+
+    /**
+     * @param string $b64
+     * @return static
+     */
+    public static function fromBase64(string $b64): static
+    {
+        $bytes = base64_decode($b64, true);
+        if (!$bytes) {
+            throw new \InvalidArgumentException('Cannot instantiate Buffer; Invalid base64 encoded data');
+        }
+
+        return new static($bytes);
+    }
+
+    /**
+     * @param array $bA
+     * @return static
+     */
+    public static function fromByteArray(array $bA): static
+    {
+        $i = -1;
+        $str = "";
+        foreach ($bA as $byte) {
+            $i++;
+            if (!is_int($byte) || $byte < 0 || $byte > 0xff) {
+                throw new \InvalidArgumentException(sprintf('Invalid byte at index %d', $i));
+            }
+
+            $str .= chr($byte);
+        }
+
+        return new static($str);
+    }
+
+    /**
+     * @param array $bytes
+     * @return static
+     */
+    public static function fromBinary(array $bytes): static
+    {
+        $bytes = implode(" ", $bytes);
+        if (!preg_match('/^[01]{1,8}(\s[01]{1,8})*$/', $bytes)) {
+            throw new \InvalidArgumentException('Cannot instantiate Buffer; expected Binary');
+        }
+
+        $bytes = explode(" ", $bytes);
+        $bA = [];
+        foreach ($bytes as $byte) {
+            $bA[] = gmp_intval(gmp_init($byte, 2));
+        }
+
+        return static::fromByteArray($bA);
+    }
+
+    /**
      * AbstractByteArray constructor.
      * @param string|null $data
      */
     public function __construct(?string $data = null)
     {
         if ($data) {
-            $this->setBuffer($data, false);
-        }
-
-        if (!$this->len) {
-            $this->writable();
+            $this->setBuffer($data);
         }
 
         $this->_machine_isLE = self::isLittleEndian();
         $this->_gmp_isLE = self::gmpEndianess() === self::GMP_LITTLE_ENDIAN;
+    }
+
+    /**
+     * @param bool $prefix
+     * @return string
+     */
+    public function toBase16(bool $prefix = false): string
+    {
+        $hexits = bin2hex($this->raw());
+        if (strlen($hexits) % 2 !== 0) {
+            $hexits = "0" . $hexits;
+        }
+        return $prefix ? "0x" . $hexits : $hexits;
+    }
+
+    /**
+     * @return string
+     */
+    public function toBase64(): string
+    {
+        return base64_encode($this->data);
+    }
+
+    /**
+     * @param bool $padded8bits
+     * @return array
+     */
+    public function toBinary(bool $padded8bits = false): array
+    {
+        $bA = $this->byteArray();
+        $bin = [];
+        foreach ($bA as $byte) {
+            $bin[] = $padded8bits ? str_pad(decbin($byte), 8, "0", STR_PAD_LEFT) : decbin($byte);
+        }
+
+        return $bin;
     }
 
     /**
@@ -133,7 +245,7 @@ class AbstractByteArray
                 );
             }
 
-            $this->setBuffer($bytes, false);
+            $this->setBuffer($bytes);
         }
 
         $this->readOnly = intval($data[0]) === 1;
@@ -147,175 +259,6 @@ class AbstractByteArray
     public function len(): int
     {
         return $this->len;
-    }
-
-    /**
-     * @return $this
-     */
-    public function clean(): self
-    {
-        $this->data = "";
-        $this->len = 0;
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function readOnly(): self
-    {
-        $this->readOnly = true;
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function writable(): self
-    {
-        $this->readOnly = false;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isWritable(): bool
-    {
-        return !$this->readOnly;
-    }
-
-    /**
-     * @param AbstractByteArray|string|null $bytes
-     * @return $this
-     */
-    public function append(AbstractByteArray|string|null $bytes): self
-    {
-        if ($bytes) {
-            $bytes = $bytes instanceof static ? $bytes->raw() : $bytes;
-            if ($bytes) {
-                $this->setBuffer($this->data . $bytes);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param AbstractByteArray|string|null $bytes
-     * @return $this
-     */
-    public function prepend(AbstractByteArray|string|null $bytes): self
-    {
-        if ($bytes) {
-            $bytes = $bytes instanceof static ? $bytes->raw() : $bytes;
-            if ($bytes) {
-                $this->setBuffer($bytes . $this->data);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @return $this
-     */
-    public function appendUInt8(int $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint($uint, 8, 0xff);
-        $this->data .= hex2bin(str_pad(dechex($uint), 2, "0", STR_PAD_LEFT));
-        $this->len++;
-        return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @return $this
-     */
-    public function appendUInt16LE(int $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint($uint, 16, 0xffff);
-        $this->data .= pack("v", $uint);
-        $this->len += 2;
-        return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @return $this
-     */
-    public function appendUInt16BE(int $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint($uint, 16, 0xffff);
-        $this->data .= pack("n", $uint);
-        $this->len += 2;
-        return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @return $this
-     */
-    public function appendUInt32LE(int $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint($uint, 32, 0xffffffff);
-        $this->data .= pack("V", $uint);
-        $this->len += 4;
-        return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @return $this
-     */
-    public function appendUInt32BE(int $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint($uint, 32, 0xffffffff);
-        $this->data .= pack("N", $uint);
-        $this->len += 4;
-        return $this;
-    }
-
-    /**
-     * @param int|string $uint
-     * @return $this
-     */
-    public function appendUInt64LE(int|string $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint64($uint);
-        $packed = str_pad(hex2bin(gmp_strval(gmp_init($uint, 10), 16)), 8, "\0", STR_PAD_LEFT);
-        if (!$this->_gmp_isLE) {
-            $packed = self::swapEndianess($packed, false);
-        }
-
-        $this->data .= $packed;
-        $this->len += 8;
-        return $this;
-    }
-
-    /**
-     * @param int|string $uint
-     * @return $this
-     */
-    public function appendUInt64BE(int|string $uint): self
-    {
-        $this->checkWritable();
-        $this->checkUint64($uint);
-        $packed = str_pad(hex2bin(gmp_strval(gmp_init($uint, 10), 16)), 8, "\0", STR_PAD_LEFT);
-        if ($this->_gmp_isLE) {
-            $packed = self::swapEndianess($packed, false);
-        }
-
-        $this->data .= $packed;
-        $this->len += 8;
-        return $this;
     }
 
     /**
@@ -368,20 +311,6 @@ class AbstractByteArray
     }
 
     /**
-     * @param \Closure $func
-     * @return $this
-     */
-    public function apply(\Closure $func): static
-    {
-        $applied = $func($this->data);
-        if (!is_string($applied)) {
-            throw new \UnexpectedValueException(sprintf('Expected string from apply callback, got "%s"', gettype($applied)));
-        }
-
-        return new static($applied);
-    }
-
-    /**
      * @return ByteReader
      */
     public function read(): ByteReader
@@ -402,14 +331,7 @@ class AbstractByteArray
      */
     public function switchEndianness(): static
     {
-        $flipped = new static(self::swapEndianess($this->raw()));
-        if ($this->isWritable()) {
-            $flipped->writable();
-        } else {
-            $flipped->readOnly();
-        }
-
-        return $flipped;
+        return new static(self::swapEndianess($this->raw()));
     }
 
     /**
@@ -420,72 +342,32 @@ class AbstractByteArray
         return [
             "bytes" => $this->byteArray(),
             "size" => $this->len,
-            "readOnly" => $this->readOnly(),
+            "readOnly" => $this->readOnly,
             "_machineIsLE" => $this->_machine_isLE,
             "_gmpIsLE" => $this->_gmp_isLE,
         ];
     }
 
     /**
-     * @param string $bytes
-     * @param bool $checkWritable
+     * @param \Closure $func
+     * @return $this
      */
-    protected function setBuffer(string $bytes, bool $checkWritable = true): void
+    public function applyFn(\Closure $func): static
     {
-        if ($checkWritable) {
-            $this->checkWritable();
+        $applied = $func($this->data);
+        if (!is_string($applied)) {
+            throw new \UnexpectedValueException(sprintf('Expected string from apply callback, got "%s"', gettype($applied)));
         }
 
+        return new static($applied);
+    }
+
+    /**
+     * @param string $bytes
+     */
+    protected function setBuffer(string $bytes): void
+    {
         $this->data = $bytes;
         $this->len = strlen($this->data);
-    }
-
-    /**
-     * @return void
-     */
-    protected function checkWritable(): void
-    {
-        if ($this->readOnly) {
-            throw new \BadMethodCallException('Buffer is in readonly state');
-        }
-    }
-
-    /**
-     * @param int $uint
-     * @param int $size
-     * @param int $max
-     */
-    protected function checkUint(int $uint, int $size, int $max): void
-    {
-        if ($uint < 0) {
-            throw new \UnderflowException("Cannot appendUint{$size}; Argument is signed integer");
-        }
-
-        if ($uint > $max) {
-            throw new \OverflowException("Cannot appendUint{$size}; Argument must not exceed {$max}");
-        }
-    }
-
-    /**
-     * @param int|string $val
-     */
-    protected function checkUint64(int|string $val): void
-    {
-        if (is_int($val)) {
-            $val = strval($val);
-        }
-
-        if (!preg_match('/^[1-9]+[0-9]*$/', $val)) {
-            throw new \InvalidArgumentException('Invalid/malformed value for Uint64');
-        }
-
-        $val = gmp_init($val, 10);
-        if (gmp_cmp($val, "0") === -1) {
-            throw new \UnderflowException("Cannot appendUint64; Argument is signed integer");
-        }
-
-        if (gmp_cmp($val, "18446744073709551615") === 1) {
-            throw new \OverflowException("Cannot appendUint64; Argument must not exceed 18,446,744,073,709,551,615");
-        }
     }
 }
