@@ -34,11 +34,11 @@ raw | Get existing bytes in buffer as string
 byteArray | Returns an indexed Array comprised of every byte's position on ASCII table
 copy | Creates a copy of buffer from given start and/or up to length
 equals | Compares buffer bytes with another buffer or string
-apply | Applies a function/callback to existing buffer creating a new buffer instance as result
 read | Creates a [ByteReader](#bytereader) instance
 hash | Creates a [ByteDigest](#bytedigest) instance
 switchEndianess | Converts endianess of entire buffer between big and little endians
 dump | Buffer information as an Array
+applyFn | Applies a function/callback to existing buffer creating a new buffer instance as result
 toBase16 | Encodes the buffer as Base16/Hexadecimal
 toBase64 | Encodes the buffer in Base64
 toBinary | Encodes the buffer into an indexed Array where each index is binary representation of byte (1s and 0s)
