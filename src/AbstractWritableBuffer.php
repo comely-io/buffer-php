@@ -84,11 +84,24 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
      * @param int $uint
      * @return $this
      */
+    public function prependUInt8(int $uint): static
+    {
+        $this->checkWritable();
+        $this->checkUint($uint, 8, 0xff);
+        $this->data = chr($uint) . $this->data;
+        $this->len++;
+        return $this;
+    }
+
+    /**
+     * @param int $uint
+     * @return $this
+     */
     public function appendUInt8(int $uint): static
     {
         $this->checkWritable();
         $this->checkUint($uint, 8, 0xff);
-        $this->data .= hex2bin(str_pad(dechex($uint), 2, "0", STR_PAD_LEFT));
+        $this->data .= chr($uint);
         $this->len++;
         return $this;
     }

@@ -154,7 +154,7 @@ class ByteReader
      */
     public function readUInt8(): int
     {
-        return hexdec(bin2hex($this->next(1)));
+        return ord($this->next(1));
     }
 
     /**
