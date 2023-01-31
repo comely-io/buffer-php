@@ -12,13 +12,13 @@ use Comely\Buffer\Exception\ByteReaderUnderflowException;
 class ByteReader
 {
     /** @var string */
-    private string $buffer;
+    private readonly string $buffer;
     /** @var int */
-    private int $len;
+    public readonly int $len;
     /** @var int */
     private int $pointer = 0;
     /** @var bool */
-    private bool $throwUnderflowEx = true;
+    public bool $throwUnderflowEx = true;
     /** @var bool */
     private bool $_gmp_isLE;
 
@@ -104,7 +104,7 @@ class ByteReader
     }
 
     /**
-     * Reads next N bytes but does NOT updates internal pointer
+     * Reads next N bytes but does NOT update internal pointer
      * @param int $bytes
      * @return string
      */
@@ -136,11 +136,9 @@ class ByteReader
         }
 
         $read = $this->lookAhead($bytes);
-        if ($read) {
-            if (strlen($read) === $bytes) {
-                $this->pointer += $bytes;
-                return $read;
-            }
+        if (strlen($read) === $bytes) {
+            $this->pointer += $bytes;
+            return $read;
         }
 
         if ($this->throwUnderflowEx) {
