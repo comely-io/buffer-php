@@ -21,9 +21,9 @@ class AbstractByteArray
     /** @var bool */
     protected bool $readOnly = true;
     /** @var bool */
-    protected bool $_machine_isLE;
+    public readonly bool $_machine_isLE;
     /** @var bool */
-    protected bool $_gmp_isLE;
+    public readonly bool $_gmp_isLE;
 
     /**
      * @return bool
@@ -65,7 +65,7 @@ class AbstractByteArray
             }
 
             // Remove the "0x" prefix
-            if (substr($hex, 0, 2) === "0x") {
+            if (str_starts_with($hex, "0x")) {
                 $hex = substr($hex, 2);
             }
 
