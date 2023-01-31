@@ -147,6 +147,19 @@ class AbstractByteArray
     }
 
     /**
+     * @param int $bytes
+     * @return $this
+     */
+    public function checkSize(int $bytes): static
+    {
+        if ($this->len !== $bytes) {
+            throw new \LengthException(sprintf('Expected value of %d bytes; got %d', $bytes, $this->len));
+        }
+
+        return $this;
+    }
+
+    /**
      * @param bool $prefix
      * @return string
      */
