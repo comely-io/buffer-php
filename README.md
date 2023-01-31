@@ -27,21 +27,22 @@ Buffer for PHP strings (ByteArray)
 
 ### Methods
 
- Method          | Description                                                                                            
------------------|--------------------------------------------------------------------------------------------------------
- len             | Get length/size of buffer in bytes                                                                     
- raw             | Get existing bytes in buffer as string                                                                 
- byteArray       | Returns an indexed Array comprised of every byte's position on ASCII table                             
- copy            | Creates a copy of buffer from given start and/or up to length                                          
- equals          | Compares buffer bytes with another buffer or string                                                    
- read            | Creates a [ByteReader](#bytereader) instance                                                           
- hash            | Creates a [ByteDigest](#bytedigest) instance                                                           
- switchEndianess | Converts endianess of entire buffer between big and little endians                                     
- dump            | Buffer information as an Array                                                                         
- applyFn         | Applies a function/callback to existing buffer creating a new buffer instance as result                
- toBase16        | Encodes the buffer as Base16/Hexadecimal                                                               
- toBase64        | Encodes the buffer in Base64                                                                           
- toBinary        | Encodes the buffer into an indexed Array where each index is binary representation of byte (1s and 0s) 
+ Method          | Description                                                                                                      
+-----------------|------------------------------------------------------------------------------------------------------------------
+ len             | Get length/size of buffer in bytes                                                                               
+ raw             | Get existing bytes in buffer as string                                                                           
+ byteArray       | Returns an indexed Array comprised of every byte's position on ASCII table                                       
+ copy            | Creates a copy of buffer from given start and/or up to length                                                    
+ equals          | Compares buffer bytes with another buffer or string                                                              
+ read            | Creates a [ByteReader](#bytereader) instance                                                                     
+ hash            | Creates a [ByteDigest](#bytedigest) instance                                                                     
+ switchEndianess | Converts endianess of entire buffer between big and little endians                                               
+ dump            | Buffer information as an Array                                                                                   
+ applyFn         | Applies a function/callback to existing buffer creating a new buffer instance as result                          
+ toBase16        | Encodes the buffer as Base16/Hexadecimal                                                                         
+ toBase64        | Encodes the buffer in Base64                                                                                     
+ toBinary        | Encodes the buffer into an indexed Array where each index is binary representation of byte (1s and 0s)           
+ checkSize       | Checks if buffer is comprised of exactly same number of bytes as in argument, throws `LengthException` otherwise 
 
 ## Writeable Buffers
 
@@ -58,7 +59,7 @@ All the methods from fixed-length buffers above, and also:
  append         | Append bytes to end of buffer                                         
  prepend        | Prepend bytes to start of buffer                                      
  prependUInt8   | Prepends a single byte integer                                        
- appendUInt8    | Appends a single byte integer                                           
+ appendUInt8    | Appends a single byte integer                                         
  appendUInt16LE | Appends 2 byte integer in little endian byte order                    
  appendUInt16BE | Appends 2 byte integer in big endian byte order                       
  appendUInt32LE | Appends 4 byte integer in little endian byte order                    
