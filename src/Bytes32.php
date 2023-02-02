@@ -22,6 +22,6 @@ class Bytes32 extends AbstractFixedLenBuffer
      */
     public static function fromBase16UnPadded(string $hex): static
     {
-        return static::fromBase16(str_pad($hex, 64, "0", static::SIZE * 2));
+        return static::fromBase16(str_pad($hex, static::SIZE * 2, "0", STR_PAD_LEFT));
     }
 }
