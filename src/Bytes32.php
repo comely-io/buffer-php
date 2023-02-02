@@ -15,4 +15,13 @@ class Bytes32 extends AbstractFixedLenBuffer
     protected const SIZE = 32;
 
     use CompareBuffersDataTrait;
+
+    /**
+     * @param string $hex
+     * @return static
+     */
+    public static function fromBase16UnPadded(string $hex): static
+    {
+        return static::fromBase16(str_pad($hex, 64, "0", static::SIZE * 2));
+    }
 }
