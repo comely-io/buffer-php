@@ -13,6 +13,58 @@ use Comely\Buffer\Buffer;
 trait EncodeDecodeTrait
 {
     /**
+     * @param string $encodedStr
+     * @param \Comely\Buffer\BigInteger\BaseCharset $base
+     * @return static
+     */
+    public static function fromCustomBase(string $encodedStr, BaseCharset $base): static
+    {
+        if (!$base->caseSensitive) {
+            $encodedStr = strtolower($encodedStr);
+        }
+
+        $len = strlen($encodedStr);
+        $value = gmp_init(0, 10);
+        $multiplier = gmp_init(1, 10);
+
+        for ($i = $len - 1; $i >= 0; $i--) { // Start in reverse order
+            $value = gmp_add($value, gmp_mul($multiplier, gmp_init(strpos($base->charset, $encodedStr[$i]), 10)));
+            $multiplier = gmp_mul($multiplier, $base->len);
+        }
+
+        return new static($value);
+    }
+
+    /**
+     * @param \Comely\Buffer\BigInteger\BaseCharset $base
+     * @return string
+     */
+    public function toCustomBase(BaseCharset $base): string
+    {
+        if (!$this->isUnsigned()) {
+            throw new \InvalidArgumentException('Cannot convert a signed BigInteger to custom base');
+        }
+
+        $num = $this->int;
+        $encoded = "";
+        while (true) {
+            if (gmp_cmp($num, $base->len) < 0) {
+                break;
+            }
+
+            $pos = gmp_intval(gmp_mod($num, $base->len));
+            $num = gmp_div($num, $base->len);
+            $encoded = $base->charset[$pos] . $encoded;
+        }
+
+        if (gmp_cmp($num, 0) >= 0) {
+            $encoded = $base->charset[gmp_intval($num)] . $encoded;
+        }
+
+        return $encoded;
+    }
+
+    /**
      * @param string $hex
      * @return static
      */
@@ -51,6 +103,14 @@ trait EncodeDecodeTrait
     public function toBase16(): string
     {
         return gmp_strval($this->int, 16);
+    }
+
+    /**
+     * @return string
+     */
+    public function toString(): string
+    {
+        return gmp_strval($this->int, 10);
     }
 
     /**
