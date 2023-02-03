@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace Comely\Buffer;
 
+use Comely\Buffer\BigInteger\BigEndian;
+use Comely\Buffer\BigInteger\LittleEndian;
+use Comely\Buffer\BigInteger\Math;
+
 /**
  * Class AbstractWritableBuffer
  * @package Comely\Buffer
@@ -83,8 +87,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function prependUInt8(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 8, 0xff);
-        $this->data = chr($uint) . $this->data;
+        $this->data = Math::PackUInt8($uint) . $this->data;
         $this->len++;
         return $this;
     }
@@ -96,8 +99,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt8(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 8, 0xff);
-        $this->data .= chr($uint);
+        $this->data .= Math::PackUInt8($uint);
         $this->len++;
         return $this;
     }
@@ -109,8 +111,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt16LE(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 16, 0xffff);
-        $this->data .= pack("v", $uint);
+        $this->data .= LittleEndian::PackUInt16($uint);
         $this->len += 2;
         return $this;
     }
@@ -122,8 +123,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt16BE(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 16, 0xffff);
-        $this->data .= pack("n", $uint);
+        $this->data .= BigEndian::PackUInt16($uint);
         $this->len += 2;
         return $this;
     }
@@ -135,8 +135,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt32LE(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 32, 0xffffffff);
-        $this->data .= pack("V", $uint);
+        $this->data .= LittleEndian::PackUInt32($uint);
         $this->len += 4;
         return $this;
     }
@@ -148,8 +147,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt32BE(int $uint): static
     {
         $this->checkWritable();
-        $this->checkUint($uint, 32, 0xffffffff);
-        $this->data .= pack("N", $uint);
+        $this->data .= BigEndian::PackUInt32($uint);
         $this->len += 4;
         return $this;
     }
@@ -161,13 +159,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt64LE(int|string $uint): static
     {
         $this->checkWritable();
-        $this->checkUint64($uint);
-        $packed = str_pad(hex2bin(gmp_strval(gmp_init($uint, 10), 16)), 8, "\0", STR_PAD_LEFT);
-        if (!$this->_gmp_isLE) {
-            $packed = self::swapEndianess($packed, false);
-        }
-
-        $this->data .= $packed;
+        $this->data .= LittleEndian::PackUInt64($uint);
         $this->len += 8;
         return $this;
     }
@@ -179,54 +171,9 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function appendUInt64BE(int|string $uint): static
     {
         $this->checkWritable();
-        $this->checkUint64($uint);
-        $packed = str_pad(hex2bin(gmp_strval(gmp_init($uint, 10), 16)), 8, "\0", STR_PAD_LEFT);
-        if ($this->_gmp_isLE) {
-            $packed = self::swapEndianess($packed, false);
-        }
-
-        $this->data .= $packed;
+        $this->data .= BigEndian::PackUInt64($uint);
         $this->len += 8;
         return $this;
-    }
-
-    /**
-     * @param int $uint
-     * @param int $size
-     * @param int $max
-     */
-    protected function checkUint(int $uint, int $size, int $max): void
-    {
-        if ($uint < 0) {
-            throw new \UnderflowException("Cannot appendUint{$size}; Argument is signed integer");
-        }
-
-        if ($uint > $max) {
-            throw new \OverflowException("Cannot appendUint{$size}; Argument must not exceed {$max}");
-        }
-    }
-
-    /**
-     * @param int|string $val
-     */
-    protected function checkUint64(int|string $val): void
-    {
-        if (is_int($val)) {
-            $val = strval($val);
-        }
-
-        if (!preg_match('/^[1-9]+[0-9]*$/', $val)) {
-            throw new \InvalidArgumentException('Invalid/malformed value for Uint64');
-        }
-
-        $val = gmp_init($val, 10);
-        if (gmp_cmp($val, "0") === -1) {
-            throw new \UnderflowException("Cannot appendUint64; Argument is signed integer");
-        }
-
-        if (gmp_cmp($val, "18446744073709551615") === 1) {
-            throw new \OverflowException("Cannot appendUint64; Argument must not exceed 18,446,744,073,709,551,615");
-        }
     }
 
     /**

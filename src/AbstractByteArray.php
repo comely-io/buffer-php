@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Comely\Buffer;
 
+use Comely\Buffer\BigInteger\Math;
+
 /**
  * Class AbstractByteArray
  * @package Comely\Buffer
@@ -11,9 +13,6 @@ namespace Comely\Buffer;
  */
 class AbstractByteArray
 {
-    public const GMP_LITTLE_ENDIAN = 0x01;
-    public const GMP_BIG_ENDIAN = 0x02;
-
     /** @var string */
     protected string $data = "";
     /** @var int */
@@ -24,33 +23,6 @@ class AbstractByteArray
     public readonly bool $_machine_isLE;
     /** @var bool */
     public readonly bool $_gmp_isLE;
-
-    /**
-     * @return bool
-     */
-    public static function isLittleEndian(): bool
-    {
-        return pack("S", 1) === pack("v", 1);
-    }
-
-    /**
-     * @return int
-     */
-    public static function gmpEndianess(): int
-    {
-        return gmp_strval(gmp_init(65534, 10), 16) === "feff" ? self::GMP_LITTLE_ENDIAN : self::GMP_BIG_ENDIAN;
-    }
-
-    /**
-     * @param string $inp
-     * @param bool $checkHex
-     * @return string
-     */
-    public static function swapEndianess(string $inp, bool $checkHex = true): string
-    {
-        $isHex = $checkHex && preg_match('/^[a-f0-9]+$/i', $inp);
-        return implode("", array_reverse(str_split($inp, $isHex ? 2 : 1)));
-    }
 
     /**
      * @param string $hex
@@ -142,8 +114,8 @@ class AbstractByteArray
             $this->setBuffer($data);
         }
 
-        $this->_machine_isLE = self::isLittleEndian();
-        $this->_gmp_isLE = self::gmpEndianess() === self::GMP_LITTLE_ENDIAN;
+        $this->_machine_isLE = Math::isLittleEndian();
+        $this->_gmp_isLE = Math::gmpEndianness() === Math::GMP_LITTLE_ENDIAN;
     }
 
     /**
@@ -262,8 +234,8 @@ class AbstractByteArray
         }
 
         $this->readOnly = intval($data[0]) === 1;
-        $this->_machine_isLE = self::isLittleEndian();
-        $this->_gmp_isLE = self::gmpEndianess() === self::GMP_LITTLE_ENDIAN;
+        $this->_machine_isLE = Math::isLittleEndian();
+        $this->_gmp_isLE = Math::gmpEndianness() === Math::GMP_LITTLE_ENDIAN;
     }
 
     /**
@@ -344,7 +316,7 @@ class AbstractByteArray
      */
     public function switchEndianness(): static
     {
-        return new static(self::swapEndianess($this->raw()));
+        return new static(Math::SwapEndianness($this->raw()));
     }
 
     /**

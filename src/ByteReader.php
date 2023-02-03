@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Comely\Buffer;
 
+use Comely\Buffer\BigInteger\Math;
 use Comely\Buffer\Exception\ByteReaderUnderflowException;
 
 /**
@@ -220,11 +221,11 @@ class ByteReader
     {
         $bytes = $this->next(8);
         if ($isLE && !$this->_gmp_isLE) {
-            $bytes = AbstractByteArray::swapEndianess($bytes, false);
+            $bytes = Math::SwapEndianness($bytes, false);
         }
 
         if (!$isLE && $this->_gmp_isLE) {
-            $bytes = AbstractByteArray::swapEndianess($bytes, false);
+            $bytes = Math::SwapEndianness($bytes, false);
         }
 
         $dec = gmp_strval(gmp_init(bin2hex($bytes), 16), 10);
