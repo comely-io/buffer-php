@@ -5,6 +5,7 @@ namespace Comely\Buffer\BigInteger;
 
 use Comely\Buffer\AbstractByteArray;
 use Comely\Buffer\Buffer;
+use Comely\Buffer\Exception\BaseConvertException;
 
 /**
  * Trait EncodeDecodeTrait
@@ -23,12 +24,18 @@ trait EncodeDecodeTrait
             $encodedStr = strtolower($encodedStr);
         }
 
+        $maxPos = $base->len - 1;
         $len = strlen($encodedStr);
         $value = gmp_init(0, 10);
         $multiplier = gmp_init(1, 10);
 
         for ($i = $len - 1; $i >= 0; $i--) { // Start in reverse order
-            $value = gmp_add($value, gmp_mul($multiplier, gmp_init(strpos($base->charset, $encodedStr[$i]), 10)));
+            $pos = gmp_mul($multiplier, gmp_init(strpos($base->charset, $encodedStr[$i]), 10));
+            if ($pos > $maxPos) {
+                throw new BaseConvertException('Charset out of range');
+            }
+
+            $value = gmp_add($value, $pos);
             $multiplier = gmp_mul($multiplier, $base->len);
         }
 
@@ -45,6 +52,7 @@ trait EncodeDecodeTrait
             throw new \InvalidArgumentException('Cannot convert a signed BigInteger to custom base');
         }
 
+        $maxPos = $base->len - 1;
         $num = $this->int;
         $encoded = "";
         while (true) {
@@ -53,6 +61,10 @@ trait EncodeDecodeTrait
             }
 
             $pos = gmp_intval(gmp_mod($num, $base->len));
+            if ($pos > $maxPos) {
+                throw new BaseConvertException('Charset out of range');
+            }
+
             $num = gmp_div($num, $base->len);
             $encoded = $base->charset[$pos] . $encoded;
         }
