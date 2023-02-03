@@ -24,14 +24,14 @@ trait EncodeDecodeTrait
             $encodedStr = strtolower($encodedStr);
         }
 
-        $maxPos = $base->len - 1;
+        $maxPos = gmp_init($base->len - 1, 10);
         $len = strlen($encodedStr);
         $value = gmp_init(0, 10);
         $multiplier = gmp_init(1, 10);
 
         for ($i = $len - 1; $i >= 0; $i--) { // Start in reverse order
             $pos = gmp_mul($multiplier, gmp_init(strpos($base->charset, $encodedStr[$i]), 10));
-            if ($pos > $maxPos) {
+            if (gmp_cmp($pos, $maxPos) > 0) {
                 throw new BaseConvertException('Charset out of range');
             }
 
@@ -52,7 +52,7 @@ trait EncodeDecodeTrait
             throw new \InvalidArgumentException('Cannot convert a signed BigInteger to custom base');
         }
 
-        $maxPos = $base->len - 1;
+        $maxPos = gmp_init($base->len - 1, 10);
         $num = $this->int;
         $encoded = "";
         while (true) {
@@ -61,7 +61,7 @@ trait EncodeDecodeTrait
             }
 
             $pos = gmp_intval(gmp_mod($num, $base->len));
-            if ($pos > $maxPos) {
+            if (gmp_cmp($pos, $maxPos) > 0) {
                 throw new BaseConvertException('Charset out of range');
             }
 
