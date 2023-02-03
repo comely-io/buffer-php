@@ -179,6 +179,10 @@ class BigInteger extends Math
      */
     private function getGMPn(int|string|self|AbstractByteArray|\GMP $n): \GMP
     {
+        if ($n instanceof \GMP) {
+            return $n;
+        }
+
         if (is_int($n)) {
             return gmp_init($n, 10);
         }
