@@ -57,7 +57,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function append(AbstractByteArray|string|null $bytes): static
     {
         $this->checkWritable();
-        $bytes = $bytes instanceof static ? $bytes->raw() : $bytes;
+        $bytes = $bytes instanceof AbstractByteArray ? $bytes->raw() : $bytes;
         if (is_string($bytes) && strlen($bytes)) {
             $this->setBuffer($this->data . $bytes);
         }
@@ -72,7 +72,7 @@ abstract class AbstractWritableBuffer extends AbstractByteArray
     public function prepend(AbstractByteArray|string|null $bytes): static
     {
         $this->checkWritable();
-        $bytes = $bytes instanceof static ? $bytes->raw() : $bytes;
+        $bytes = $bytes instanceof AbstractByteArray ? $bytes->raw() : $bytes;
         if (is_string($bytes) && strlen($bytes)) {
             $this->setBuffer($bytes . $this->data);
         }
