@@ -108,4 +108,22 @@ class LittleEndian
 
         return new BigInteger(gmp_init(bin2hex($bn), 16));
     }
+
+    /**
+     * @param int|string|\GMP $int
+     * @return string
+     */
+    public static function GMP_Pack(int|string|\GMP $int): string
+    {
+        return gmp_export($int instanceof \GMP ? $int : gmp_init($int, 10), 1, GMP_LSW_FIRST | GMP_NATIVE_ENDIAN);
+    }
+
+    /**
+     * @param string $bn
+     * @return \GMP
+     */
+    public static function GMP_Unpack(string $bn): \GMP
+    {
+        return gmp_import($bn, 1, GMP_LSW_FIRST | GMP_NATIVE_ENDIAN);
+    }
 }
