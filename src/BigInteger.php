@@ -188,7 +188,7 @@ class BigInteger extends Math
         }
 
         if (is_string($n)) {
-            if (preg_match('/^-?[1-9]+[0-9]*$/', $n)) {
+            if (preg_match('/^(0|-?[1-9][0-9]+)$/', $n)) {
                 return gmp_init($n, 10);
             } elseif (preg_match('/^(0x)?[a-f0-9]{2,}$/i', $n)) {
                 return gmp_init($n, 16);
