@@ -119,7 +119,7 @@ trait EncodeDecodeTrait
      */
     public function toInt(): int
     {
-        if ($this->cmp("18446744073709551615") > 0) {
+        if ($this->cmp(PHP_INT_MAX) > 0) {
             throw new \OverflowException('Cannot convert BigInteger to int; Value too long');
         }
 
