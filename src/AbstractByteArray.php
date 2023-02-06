@@ -268,6 +268,23 @@ class AbstractByteArray
     }
 
     /**
+     * @param int $bytes
+     * @return string|false
+     */
+    public function pop(int $bytes): string|false
+    {
+        if ($bytes !== 0) {
+            $result = $bytes > 0 ? substr($this->data, 0, $bytes) : substr($this->data, $bytes);
+            if (strlen($result) === ($bytes > 0 ? $bytes : $bytes * -1)) {
+                $this->setBuffer($bytes > 0 ? substr($this->data, $bytes) : substr($this->data, 0, $bytes));
+                return $result;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param int|null $start
      * @param int|null $length
      * @return $this
