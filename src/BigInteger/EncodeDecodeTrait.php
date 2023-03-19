@@ -103,7 +103,12 @@ trait EncodeDecodeTrait
      */
     public function toBase16(): string
     {
-        return gmp_strval($this->int, 16);
+        $b16 = gmp_strval($this->int, 16);
+        if (strlen($b16) % 2 !== 0) {
+            $b16 = "0" . $b16;
+        }
+
+        return $b16;
     }
 
     /**
